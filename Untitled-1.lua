@@ -1,7 +1,31 @@
--- [[ Load UI Library ]]
-local library = loadstring(game:HttpGet('https://raw.githubusercontent.com/wally-rblx/LinoriaLib/main/Library.lua'))()
-local themeManager = loadstring(game:HttpGet('https://raw.githubusercontent.com/wally-rblx/LinoriaLib/main/addons/ThemeManager.lua'))()
-local saveManager = loadstring(game:HttpGet('https://raw.githubusercontent.com/wally-rblx/LinoriaLib/main/addons/SaveManager.lua'))()
+-- Load UI Library Safely
+local function getLibrary(url)
+    local success, response = pcall(game.HttpGet, game, url)
+    if not success then return warn("Failed to HttpGet:", response) end
+    
+    local func, loadErr = loadstring(response)
+    if not func then return warn("Failed to Loadstring:", loadErr) end
+    
+    local execSuccess, result = pcall(func)
+    if not execSuccess then return warn("Failed to Execute:", result) end
+    
+    return result
+end
+
+local library = getLibrary('https://raw.githubusercontent.com/wally-rblx/LinoriaLib/main/Library.lua')
+if type(library) == "string" and library:match("404") then
+    -- Fallback/Właściwy fork jeśli oryginalny repozytorium padło (a wally usunął swoje z githuba)
+    library = getLibrary('https://raw.githubusercontent.com/violin-suzutsuki/LinoriaLib/main/Library.lua')
+    themeManager = getLibrary('https://raw.githubusercontent.com/violin-suzutsuki/LinoriaLib/main/addons/ThemeManager.lua')
+    saveManager = getLibrary('https://raw.githubusercontent.com/violin-suzutsuki/LinoriaLib/main/addons/SaveManager.lua')
+else
+    themeManager = getLibrary('https://raw.githubusercontent.com/wally-rblx/LinoriaLib/main/addons/ThemeManager.lua')
+    saveManager = getLibrary('https://raw.githubusercontent.com/wally-rblx/LinoriaLib/main/addons/SaveManager.lua')
+end
+
+if not library then
+    return warn("Executor Error: UI Library could not be loaded. Please ensure your executor fully supports HttpGet and Loadstring.")
+end
 
 local window = library:CreateWindow({
     Title = 'Unnamed Enhancements - discord.gg/enhancements',
